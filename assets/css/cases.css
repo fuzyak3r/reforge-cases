@@ -1,0 +1,119 @@
+/* Case display styles */
+.year-filter {
+    margin: 20px 0 30px;
+}
+
+.case-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 15px;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    height: 100%;
+}
+
+.case-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.case-image {
+    max-width: 100%;
+    height: 150px;
+    object-fit: contain;
+    margin-bottom: 10px;
+}
+
+.case-title {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.case-price {
+    color: #28a745;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.case-detail-image {
+    max-width: 200px;
+    display: block;
+    margin: 0 auto 20px;
+}
+
+/* Spinner styles */
+.spinner-roulette {
+    width: 100%;
+    height: 150px;
+    overflow: hidden;
+    position: relative;
+    margin: 20px 0;
+    border: 2px solid #333;
+    border-radius: 5px;
+}
+
+.spinner-items {
+    display: flex;
+    position: relative;
+    height: 100%;
+}
+
+.spinner-item {
+    min-width: 120px;
+    margin-right: 2px;
+    height: 100%;
+}
+
+.spinner-pointer {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    height: 100%;
+    width: 2px;
+    background-color: gold;
+    z-index: 10;
+}
+
+.spinner-item-image-wrap {
+    height: 75%;
+    background-color: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spinner-item-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.spinner-item-title {
+    height: 25%;
+    padding: 5px;
+    color: white;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Win modal styles */
+.won-item-name {
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.won-item-image {
+    max-width: 90%;
+    max-height: 200px;
+    object-fit: contain;
+}
+
+.item-details {
+    margin-top: 15px;
+    font-size: 16px;
+}

@@ -1,0 +1,87 @@
+/* Inventory styles */
+.inventory-search {
+    margin: 20px 0;
+}
+
+.inventory-item-card {
+    border: 3px solid;
+    border-radius: 5px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    height: 100%;
+}
+
+.inventory-item-card:hover {
+    transform: translateY(-5px);
+}
+
+.inventory-item-image-wrap {
+    height: 150px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e9ecef;
+}
+
+.inventory-item-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.inventory-item-float {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    font-size: 12px;
+    padding: 3px;
+    text-align: center;
+}
+
+.inventory-item-title {
+    padding: 8px;
+    color: white;
+}
+
+.inventory-item-weapon {
+    font-size: 14px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inventory-item-price {
+    font-size: 16px;
+    margin-top: 3px;
+}
+
+/* Item modal styles */
+.item-modal-image {
+    max-width: 90%;
+    max-height: 200px;
+    object-fit: contain;
+    margin-bottom: 20px;
+}
+
+.item-details {
+    margin: 0 auto;
+    max-width: 300px;
+    text-align: left;
+}
+
+.item-detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.item-detail-row:last-child {
+    border-bottom: none;
+}

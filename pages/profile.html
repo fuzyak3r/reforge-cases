@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS:GO Cases - Профиль</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <img src="../assets/img/logo.png" alt="CS:GO Cases" class="logo-image">
+                </div>
+                <ul class="nav-links">
+                    <li><a href="../index.html">Главная</a></li>
+                    <li><a href="cases.html">Кейсы</a></li>
+                    <li><a href="../index.html#community">Сообщество</a></li>
+                    <li id="login-item">
+                        <a href="/api/login" class="steam-login-btn">
+                            <i class="fab fa-steam"></i> Войти через Steam
+                        </a>
+                    </li>
+                    <li id="user-profile" style="display: none;">
+                        <div class="user-profile-frame">
+                            <img src="" alt="Аватар" class="user-profile-avatar" id="header-avatar">
+                            <div class="user-profile-info">
+                                <span class="user-profile-name" id="header-username">Пользователь</span>
+                                <span class="user-profile-balance"><span id="header-balance">0</span> RC</span>
+                            </div>
+                            <i class="fas fa-chevron-down" style="margin-left: 10px; font-size: 12px; opacity: 0.7;"></i>
+                            <div class="user-dropdown">
+                                <a href="profile.html"><i class="fas fa-user" style="margin-right: 8px;"></i> Профиль</a>
+                                <a href="inventory.html"><i class="fas fa-box" style="margin-right: 8px;"></i> Инвентарь</a>
+                                <div class="separator"></div>
+                                <a href="/api/logout"><i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> Выйти</a>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <div class="menu-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container" style="padding-top: 100px; padding-bottom: 80px;">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div id="profile-card" class="profile-card fade-in" style="display: none;">
+                    <div class="profile-header">
+                        <img id="profile-avatar" src="" alt="User Avatar" class="profile-avatar">
+                        <h2 id="profile-username" class="profile-username">Имя пользователя</h2>
+                    </div>
+                    
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-value"><span id="profile-balance">0.00</span> RC</div>
+                            <div class="stat-label">Баланс</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="profile-inventory-count">0</div>
+                            <div class="stat-label">Предметы</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="profile-joined">00/00/0000</div>
+                            <div class="stat-label">Присоединился</div>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-actions">
+                        <a href="/api/logout" class="btn">Выйти</a>
+                    </div>
+                </div>
+                
+                <div id="login-card" class="text-center p-5 fade-in" style="background: linear-gradient(135deg, rgba(209, 212, 255, 0.05) 0%, rgba(138, 143, 255, 0.07) 100%); border-radius: 16px; border: 1px solid rgba(209, 212, 255, 0.1); box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px);">
+                    <h2 class="mb-4">Пожалуйста, войдите в систему</h2>
+                    <p>Вам необходимо войти в систему с помощью учетной записи Steam, чтобы просматривать свой профиль и инвентарь.</p>
+                    <a href="/api/login" class="btn steam-login-btn" style="margin-top: 20px; display: inline-flex;">
+                        <i class="fab fa-steam"></i> Войти через Steam
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="../assets/img/logo.png" alt="CS:GO Cases" class="footer-logo-image">
+                </div>
+                <div class="footer-links">
+                    <a href="#">Правила</a>
+                    <a href="#">Поддержка</a>
+                    <a href="#">FAQ</a>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2025 CS:GO Cases. Все права защищены.
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            setupFadeInAnimation();
+            setupMobileMenu();
+            
+            // Handle user profile dropdown
+            $('.user-profile-frame').click(function(e) {
+                e.stopPropagation();
+                $(this).toggleClass('active');
+            });
+            
+            $(document).click(function() {
+                $('.user-profile-frame').removeClass('active');
+            });
+            
+            // Check auth and update user data
+            fetchUserData();
+        });
+        
+        let user = null;
+        
+        // Fetch user data
+        function fetchUserData() {
+            fetch('/api/user')
+                .then(response => {
+                    if (response.status === 401) {
+                        return { authenticated: false };
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error || !data.steam_id) {
+                        // Not logged in
+                        $('#profile-card').hide();
+                        $('#login-card').show();
+                        $('#login-item').show();
+                        $('#user-profile').hide();
+                    } else {
+                        // Logged in
+                        user = data;
+                        displayUserProfile();
+                        $('#login-card').hide();
+                        $('#profile-card').show();
+                        $('#login-item').hide();
+                        $('#user-profile').show();
+                        $('#header-username').text(data.username);
+                        $('#header-avatar').attr('src', data.avatar);
+                        $('#header-balance').text(data.balance.toFixed(2));
+                    }
+                })
+                .catch(error => {
+                    console.error('Auth check error:', error);
+                    $('#profile-card').hide();
+                    $('#login-card').show();
+                });
+        }
+        
+        // Display user profile
+        function displayUserProfile() {
+            if (!user) return;
+            
+            $('#profile-avatar').attr('src', user.avatar);
+            $('#profile-username').text(user.username);
+            $('#profile-balance').text(user.balance.toFixed(2));
+            $('#profile-inventory-count').text(user.inventory_count);
+            $('#profile-joined').text(formatDate(user.created_at));
+        }
+        
+        // Format date string
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString();
+        }
+
+        function setupFadeInAnimation() {
+            const fadeElements = document.querySelectorAll('.fade-in');
+            
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            fadeElements.forEach(element => {
+                observer.observe(element);
+            });
+        }
+
+        function setupMobileMenu() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (menuToggle && navLinks) {
+                menuToggle.addEventListener('click', function() {
+                    if (navLinks.style.display === 'flex') {
+                        navLinks.style.display = 'none';
+                    } else {
+                        navLinks.style.display = 'flex';
+                        navLinks.style.position = 'absolute';
+                        navLinks.style.flexDirection = 'column';
+                        navLinks.style.top = '60px'; /* Reduced from 70px */
+                        navLinks.style.right = '20px';
+                        navLinks.style.backgroundColor = 'rgba(18, 18, 18, 0.95)';
+                        navLinks.style.padding = '20px';
+                        navLinks.style.borderRadius = '12px';
+                        navLinks.style.backdropFilter = 'blur(10px)';
+                        navLinks.style.border = '1px solid rgba(209, 212, 255, 0.1)';
+                        navLinks.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)';
+                        
+                        const navItems = navLinks.querySelectorAll('li');
+                        navItems.forEach(item => {
+                            item.style.margin = '10px 0'; /* Reduced from 12px */
+                        });
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

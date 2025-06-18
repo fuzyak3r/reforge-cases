@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS:GO Cases - Кейсы</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        /* Запрет перемещения иконок */
+        img, .case-card, .custom-checkbox, .xray-case-img, .xray-item-img, .won-item-image {
+            -webkit-user-drag: none;
+            user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            pointer-events: auto;
+        }
+        
+        /* Стили для карточки кейса */
+        .case-card {
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .case-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(138, 143, 255, 0.2);
+        }
+        
+        /* Стили для кнопки прямого открытия */
+        .open-case-btn {
+            background: linear-gradient(90deg, rgba(209, 212, 255, 0.15), rgba(138, 143, 255, 0.2));
+            color: #d1d4ff;
+            border: 2px solid rgba(209, 212, 255, 0.3);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .open-case-btn:hover {
+            background: linear-gradient(90deg, rgba(209, 212, 255, 0.25), rgba(138, 143, 255, 0.3));
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(138, 143, 255, 0.25);
+        }
+        
+        .open-case-btn i {
+            margin-right: 10px;
+        }
+        
+        /* Доп. стили для запрета перемещения */
+        * {
+            -webkit-touch-callout: none;
+        }
+        
+        /* Стиль для кнопки в модальном окне */
+        #open-case-directly {
+            background: linear-gradient(90deg, rgba(209, 212, 255, 0.15), rgba(138, 143, 255, 0.2));
+            color: #d1d4ff;
+            border: 2px solid rgba(209, 212, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        #open-case-directly:hover {
+            background: linear-gradient(90deg, rgba(209, 212, 255, 0.25), rgba(138, 143, 255, 0.3));
+            transform: translateY(-2px);
+        }
+        
+        /* Стили для кастомных уведомлений */
+        .custom-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(24, 24, 32, 0.98));
+            border-left: 4px solid #8a8fff;
+            color: #d1d4ff;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            max-width: 350px;
+            backdrop-filter: blur(10px);
+            transform: translateX(400px);
+            transition: transform 0.3s ease-out;
+            display: flex;
+            align-items: center;
+        }
+
+        .custom-notification.show {
+            transform: translateX(0);
+        }
+
+        .custom-notification.success {
+            border-left-color: #4CAF50;
+        }
+
+        .custom-notification.error {
+            border-left-color: #f44336;
+        }
+
+        .custom-notification i {
+            margin-right: 15px;
+            font-size: 24px;
+        }
+
+        .custom-notification .message {
+            flex: 1;
+        }
+
+        .custom-notification .close-notification {
+            margin-left: 15px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .custom-notification .close-notification:hover {
+            opacity: 1;
+        }
+        
+        /* Рулетка - главное окно */
+        .roulette-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 9000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .roulette-container.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Верхняя панель с информацией о кейсе */
+        .roulette-header {
+            width: 100%;
+            max-width: 1200px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            background: rgba(20, 20, 30, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .roulette-case-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .roulette-case-image {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-right: 20px;
+            filter: drop-shadow(0 0 10px rgba(138, 143, 255, 0.5));
+        }
+        
+        .roulette-case-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .roulette-case-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #d1d4ff;
+            margin-bottom: 5px;
+        }
+        
+        .roulette-case-price {
+            font-size: 18px;
+            color: #8a8fff;
+        }
+        
+        /* Рулетка - механизм вращения */
+        .roulette-wheel-container {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            height: 260px;
+            background: linear-gradient(135deg, rgba(33, 33, 50, 0.95), rgba(20, 20, 30, 0.95));
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 
+                0 10px 25px rgba(0, 0, 0, 0.5), 
+                0 0 30px rgba(138, 143, 255, 0.3) inset;
+            border: 1px solid rgba(209, 212, 255, 0.1);
+        }
+        
+        .roulette-items-container {
+            position: absolute;
+            top: 30px;
+            left: 0;
+            right: 0;
+            bottom: 30px;
+            display: flex;
+            align-items: center;
+            transform: translateX(0);
+            transition: transform 0s linear;
+            will-change: transform;
+        }
+        
+        /* Добавляем скролл-эффект для Edge */
+        @supports (-ms-ime-align: auto) {
+            .roulette-items-container {
+                -ms-overflow-style: none;
+            }
+        }
+        
+        /* Элементы в рулетке */
+        .roulette-item {
+            flex: 0 0 200px;
+            height: 200px;
+            margin: 0 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            position: relative;
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.2s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .roulette-item img {
+            max-width: 90%;
+            max-height: 100px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+            will-change: transform;
+        }
+        
+        .roulette-item-name {
+            font-size: 14px;
+            color: white;
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        
+        .roulette-item-exterior {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+        }
+        
+        /* Специальный стиль для Rare Special Item */
+        .roulette-item.rare-special {
+            background: linear-gradient(135deg, rgba(10, 10, 10, 0.8), rgba(20, 20, 20, 0.9));
+            box-shadow: 
+                0 5px 15px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(255, 215, 0, 0.3);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        .roulette-item.rare-special .roulette-item-name {
+            color: #FFD700;
+            font-weight: 600;
+        }
+        
+        /* Подсветка по краям от редкости */
+        .roulette-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+        
+        .roulette-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            transform: scaleX(0.7);
+            opacity: 0.7;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        
+        .roulette-item:hover::after {
+            transform: scaleX(0.9);
+            opacity: 0.9;
+        }
+        
+        /* Цвета редкости */
+        .rarity-consumer-grade::before, .rarity-consumer-grade::after {
+            background: linear-gradient(90deg, #b0c3d9, #b0c3d9);
+        }
+        
+        .rarity-industrial-grade::before, .rarity-industrial-grade::after {
+            background: linear-gradient(90deg, #5e98d9, #5e98d9);
+        }
+        
+        .rarity-mil-spec::before, .rarity-mil-spec::after {
+            background: linear-gradient(90deg, #4b69ff, #4b69ff);
+        }
+        
+        .rarity-restricted::before, .rarity-restricted::after {
+            background: linear-gradient(90deg, #8847ff, #8847ff);
+        }
+        
+        .rarity-classified::before, .rarity-classified::after {
+            background: linear-gradient(90deg, #d32ce6, #d32ce6);
+        }
+        
+        .rarity-covert::before, .rarity-covert::after {
+            background: linear-gradient(90deg, #eb4b4b, #eb4b4b);
+        }
+        
+        .rarity-exceedingly-rare::before, .rarity-exceedingly-rare::after {
+            background: linear-gradient(90deg, #caab05, #ffe83d);
+        }
+        
+        /* Специальный стиль для Rare Special Item */
+        .rare-special::before, .rare-special::after {
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+        }
+        
+        /* Дополнительно выделяем StatTrak */
+        .stattrak .roulette-item-name::before {
+            content: 'StatTrak™ ';
+            color: #CF6A32;
+        }
+        
+        /* Маркер указывающий на выигрыш */
+        .roulette-marker {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 4px;
+            background-color: #8a8fff;
+            transform: translateX(-2px);
+            box-shadow: 
+                0 0 15px rgba(138, 143, 255, 0.8),
+                0 0 30px rgba(138, 143, 255, 0.4);
+            z-index: 10;
+        }
+        
+        .roulette-marker::before,
+        .roulette-marker::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            background-color: #8a8fff;
+            transform: translateX(-50%) rotate(45deg);
+        }
+        
+        .roulette-marker::before {
+            top: -10px;
+        }
+        
+        .roulette-marker::after {
+            bottom: -10px;
+        }
+        
+        /* Затемнение по бокам рулетки */
+        .roulette-wheel-overlay-left,
+        .roulette-wheel-overlay-right {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 150px;
+            z-index: 5;
+            pointer-events: none;
+        }
+        
+        .roulette-wheel-overlay-left {
+            left: 0;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.7), transparent);
+        }
+        
+        .roulette-wheel-overlay-right {
+            right: 0;
+            background: linear-gradient(to left, rgba(0, 0, 0, 0.7), transparent);
+        }
+        
+        /* Настройки звука и баланса */
+        .roulette-settings {
+            width: 100%;
+            max-width: 1200px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            background: rgba(20, 20, 30, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .roulette-sound-controls {
+            display: flex;
+            align-items: center;
+        }
+        
+        .roulette-sound-btn {
+            background: transparent;
+            color: #d1d4ff;
+            border: none;
+            font-size: 24px;
+            padding: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .roulette-sound-btn:hover {
+            color: #8a8fff;
+            transform: scale(1.1);
+        }
+        
+        .roulette-sound-btn.muted {
+            color: rgba(209, 212, 255, 0.4);
+        }
+        
+        .roulette-balance {
+            font-size: 18px;
+            color: #d1d4ff;
+        }
+        
+        .roulette-balance span {
+            color: #8a8fff;
+            font-weight: 600;
+        }
+        
+        /* Анимации для элементов рулетки */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes glow {
+            0% { box-shadow: 0 0 10px rgba(138, 143, 255, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(138, 143, 255, 0.8); }
+            100% { box-shadow: 0 0 10px rgba(138, 143, 255, 0.5); }
+        }
+        
+        .roulette-win {
+            animation: pulse 0.8s ease infinite, glow 1.5s ease infinite;
+            transform: scale(1.05);
+            z-index: 2;
+        }
+        
+        /* Loading индикатор для рулетки */
+        .roulette-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 15;
+        }
+        
+        .roulette-loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(138, 143, 255, 0.3);
+            border-top: 4px solid #8a8fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Стили для отображения сетки скинов в стиле CS:GO */
+        .skins-container-title {
+            font-size: 16px;
+            color: #d1d4ff;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(209, 212, 255, 0.2);
+            padding-bottom: 8px;
+        }
+
+        .skins-grid-container {
+            background: rgba(20, 20, 30, 0.7); /* Более темный фон для контейнера скинов */
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(209, 212, 255, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .skins-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .skins-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .case-preview-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin: 0 auto;
+            width: 200px;
+            height: 200px;
+        }
+
+        .case-detail-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .skin-item {
+            position: relative;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+        }
+
+        .skin-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(209, 212, 255, 0.3);
+        }
+
+        .skin-item img {
+            max-width: 100%;
+            max-height: 70%;
+            object-fit: contain;
+        }
+
+        .skin-item .skin-name {
+            font-size: 10px;
+            color: white;
+            text-align: center;
+            margin-top: 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            line-height: 1.2;
+        }
+
+        /* Рамки для скинов по редкости */
+        .skin-item.consumer-grade {
+            border: 1px solid #b0c3d9;
+        }
+
+        .skin-item.industrial-grade {
+            border: 1px solid #5e98d9;
+        }
+
+        .skin-item.mil-spec {
+            border: 1px solid #4b69ff;
+        }
+
+        .skin-item.restricted {
+            border: 1px solid #8847ff;
+        }
+
+        .skin-item.classified {
+            border: 1px solid #d32ce6;
+        }
+
+        .skin-item.covert {
+            border: 1px solid #eb4b4b;
+        }
+
+        .skin-item.exceedingly-rare, .skin-item.rare-special {
+		border: 1px solid #FFD700; /* Изменил толщину с 2px на 1px */
+		background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(30, 30, 30, 0.8));
+		}
+
+        .skin-item.rare-special .skin-name {
+            color: #FFD700;
+            font-weight: 600;
+        }
+
+        /* Индикатор загрузки и сообщения */
+        .loading-skins {
+            padding: 20px;
+            text-align: center;
+            color: #d1d4ff;
+            font-style: italic;
+        }
+
+        .error-message {
+            padding: 20px;
+            text-align: center;
+            color: #eb4b4b;
+        }
+
+        .no-skins-message {
+            padding: 20px;
+            text-align: center;
+            color: #d1d4ff;
+        }
+
+        /* Стиль для цены кейса */
+        .case-price-tag {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: #8a8fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            border: 1px solid rgba(138, 143, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <img src="../assets/img/logo.png" alt="CS:GO Cases" class="logo-image">
+                </div>
+                <ul class="nav-links">
+                    <li><a href="../index.html">Главная</a></li>
+                    <li><a href="cases.html" class="active">Кейсы</a></li>
+                    <li><a href="../index.html#community">Сообщество</a></li>
+                    <li><a href="inventory.html">Инвентарь</a></li>
+                    <li id="login-item">
+                        <a href="/api/login" class="steam-login-btn">
+                            <i class="fab fa-steam"></i> Войти через Steam
+                        </a>
+                    </li>
+                    <li id="user-profile" style="display: none;">
+                        <div class="user-profile-frame">
+                            <img src="" alt="Аватар" class="user-profile-avatar" id="header-avatar">
+                            <div class="user-profile-info">
+                                <span class="user-profile-name" id="header-username">Пользователь</span>
+                                <span class="user-profile-balance"><span id="header-balance">0</span> RC</span>
+                            </div>
+                            <i class="fas fa-chevron-down" style="margin-left: 10px; font-size: 12px; opacity: 0.7;"></i>
+                            <div class="user-dropdown">
+                                <a href="profile.html"><i class="fas fa-user" style="margin-right: 8px;"></i> Профиль</a>
+                                <a href="inventory.html"><i class="fas fa-box" style="margin-right: 8px;"></i> Инвентарь</a>
+                                <div class="separator"></div>
+                                <a href="/api/logout"><i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> Выйти</a>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <div class="menu-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container" style="padding-top: 100px; padding-bottom: 80px;">
+        <!-- Заголовок удален -->
+        
+        <!-- Year filter buttons -->
+        <div class="year-filter fade-in">
+            <div class="btn-group" role="group" id="year-buttons">
+                <!-- Year buttons will be added via JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Cases container -->
+        <div class="row" id="cases-container">
+            <!-- Cases will be loaded dynamically -->
+            <div class="col-12 text-center">
+                <div class="spinner-border" role="status" style="color: #8a8fff; width: 50px; height: 50px; margin: 50px 0;">
+                    <span class="sr-only">Загрузка...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модифицированное модальное окно кейса со сеткой скинов как в CS:GO -->
+    <div class="modal fade" id="caseModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="caseModalTitle">Название кейса</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Центрированный контейнер для кейса -->
+                    <div class="case-preview-container text-center">
+                        <img id="case-image" src="" alt="Case" class="case-detail-image mb-3">
+                        <div class="case-price-tag">
+                            <span id="case-price">0</span> RC
+                        </div>
+                    </div>
+                    
+                    <h5 class="skins-container-title">Предметы в этом контейнере:</h5>
+                    
+                    <!-- Контейнер для сетки скинов в стиле CS:GO -->
+                    <div class="skins-grid-container">
+                        <div id="skins-grid" class="skins-grid">
+                            <!-- Сюда будут добавляться скины через JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="open-case-directly" class="btn">
+                        <i class="fas fa-unlock-alt"></i> Открыть кейс
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Item Win Modal (без показателя Float) -->
+    <div class="modal fade" id="winModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Поздравляем!</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <h3 id="won-item-name" class="won-item-name"></h3>
+                    <img id="won-item-image" src="" alt="Won Item" class="won-item-image">
+                    <div class="item-details">
+                        <!-- Строка с Float удалена -->
+                        <div class="item-detail-row">
+                            <span>Цена:</span>
+                            <strong><span id="won-item-price">0.00</span> RC</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" data-dismiss="modal">Добавить в инвентарь</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Рулетка для открытия кейсов (без кнопки закрытия) -->
+    <div class="roulette-container" id="roulette-container">
+        <div class="roulette-header">
+            <div class="roulette-case-info">
+                <img id="roulette-case-image" src="" alt="Case" class="roulette-case-image">
+                <div class="roulette-case-details">
+                    <div id="roulette-case-name" class="roulette-case-name">Название кейса</div>
+                    <div class="roulette-case-price">Цена: <span id="roulette-case-price">0.00</span> RC</div>
+                </div>
+            </div>
+            <!-- Кнопка закрытия удалена -->
+        </div>
+        
+        <div class="roulette-wheel-container">
+            <div class="roulette-items-container" id="roulette-items-container">
+                <!-- Items will be dynamically added here -->
+            </div>
+            <div class="roulette-marker"></div>
+            <div class="roulette-wheel-overlay-left"></div>
+            <div class="roulette-wheel-overlay-right"></div>
+            <div class="roulette-loading" id="roulette-loading">
+                <div class="roulette-loading-spinner"></div>
+            </div>
+        </div>
+        
+        <div class="roulette-settings">
+            <div class="roulette-sound-controls">
+                <button id="toggle-sound" class="roulette-sound-btn">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+            </div>
+            <div class="roulette-balance">
+                Ваш баланс: <span id="roulette-balance">0.00</span> RC
+            </div>
+        </div>
+    </div>
+    
+    <!-- Контейнер для уведомлений -->
+    <div id="notification-container"></div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="../assets/img/logo.png" alt="CS:GO Cases" class="footer-logo-image">
+                </div>
+                <div class="footer-links">
+                    <a href="#">Правила</a>
+                    <a href="#">Поддержка</a>
+                    <a href="#">FAQ</a>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2025 CS:GO Cases. Все права защищены.
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js"></script>
+    <script>
+        // Запретить перемещение элементов
+        document.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        
+        // Global variables
+        let allCases = [];
+        let currentYear = null;
+        let userBalance = 0;
+        let selectedCase = null;
+        let selectedItem = null;
+        let lastOpenedCases = []; // История последних открытых кейсов
+        let userDropHistory = []; // История выпадений скинов
+        let soundEnabled = true; // Звук по умолчанию включен
+        let rouletteRunning = false; // Флаг, указывающий, вращается ли рулетка
+        let caseSkins = {}; // Кэширование скинов для каждого кейса
+        
+        // Константы для редких предметов
+        const RARE_SPECIAL_IMAGE = "https://raw.githubusercontent.com/ByMykel/counter-strike-image-tracker/main/static/panorama/images/econ/weapon_cases/crate_community_35_rare_item_png.png";
+        
+        // Аудио-ресурсы
+        const rouletteSounds = {
+            opening: new Audio('../assets/sounds/case_open.mp3'),
+            spin: new Audio('../assets/sounds/case_spin.mp3'),
+            win: new Audio('../assets/sounds/case_win.mp3')
+        };
+        
+        // Регулировка громкости
+        Object.values(rouletteSounds).forEach(sound => {
+            sound.volume = 0.5;
+        });
+        
+        // Загрузка истории выпадений из localStorage
+        function loadDropHistory() {
+            try {
+                const savedHistory = localStorage.getItem('dropHistory');
+                if (savedHistory) {
+                    userDropHistory = JSON.parse(savedHistory);
+                    
+                    // Ограничиваем историю до последних 100 выпадений
+                    if (userDropHistory.length > 100) {
+                        userDropHistory = userDropHistory.slice(userDropHistory.length - 100);
+                    }
+                    
+                    console.log(`Loaded drop history: ${userDropHistory.length} items`);
+                }
+            } catch (e) {
+                console.error('Error loading drop history:', e);
+                userDropHistory = [];
+            }
+        }
+
+        // Сохранение истории выпадений
+        function saveDropHistory() {
+            try {
+                localStorage.setItem('dropHistory', JSON.stringify(userDropHistory));
+            } catch (e) {
+                console.error('Error saving drop history:', e);
+            }
+        }
+
+        // Добавление предмета в историю выпадений
+        function addToDropHistory(item) {
+            if (!item || !item._id) return;
+            
+            userDropHistory.push({
+                id: item._id,
+                pattern: item.pattern ? item.pattern._id : null,
+                weapon: item.weapon ? item.weapon._id : null,
+                rarity: item.rarity || 0,
+                timestamp: Date.now()
+            });
+            
+            // Ограничиваем размер истории
+            if (userDropHistory.length > 100) {
+                userDropHistory.shift();
+            }
+            
+            saveDropHistory();
+        }
+        
+        // Функция для показа кастомных уведомлений
+        function showNotification(message, type = 'success') {
+            // Определяем иконку в зависимости от типа уведомления
+            let icon = 'fas fa-check-circle';
+            if (type === 'error') {
+                icon = 'fas fa-exclamation-circle';
+            } else if (type === 'info') {
+                icon = 'fas fa-info-circle';
+            } else if (type === 'warning') {
+                icon = 'fas fa-exclamation-triangle';
+            }
+            
+            // Создаем элемент уведомления
+            const notification = document.createElement('div');
+            notification.className = `custom-notification ${type}`;
+            notification.innerHTML = `
+                <i class="${icon}"></i>
+                <div class="message">${message}</div>
+                <div class="close-notification">
+                    <i class="fas fa-times"></i>
+                </div>
+            `;
+            
+            // Добавляем уведомление на страницу
+            document.getElementById('notification-container').appendChild(notification);
+            
+            // Отображаем уведомление с анимацией
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            // Настраиваем автоматическое закрытие
+            const closeTimeout = setTimeout(() => {
+                closeNotification(notification);
+            }, 5000);
+            
+            // Обработчик для ручного закрытия
+            notification.querySelector('.close-notification').addEventListener('click', () => {
+                clearTimeout(closeTimeout);
+                closeNotification(notification);
+            });
+        }
+        
+        // Функция закрытия уведомления
+        function closeNotification(notification) {
+            notification.classList.remove('show');
+            
+            // Удаляем уведомление после завершения анимации
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }
+        
+        // Проигрывание звука
+        function playSound(soundName) {
+            if (!soundEnabled) return;
+            
+            try {
+                // Останавливаем другие звуки
+                Object.values(rouletteSounds).forEach(sound => {
+                    sound.pause();
+                    sound.currentTime = 0;
+                });
+                
+                // Проигрываем нужный звук
+                if (rouletteSounds[soundName]) {
+                    rouletteSounds[soundName].play().catch(() => {
+                        // Игнорируем возможные ошибки воспроизведения
+                        console.log("Sound playback prevented by browser");
+                    });
+                }
+            } catch (e) {
+                console.log("Sound error:", e);
+            }
+        }
+        
+        // Переключение звука
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            
+            const soundBtn = document.getElementById('toggle-sound');
+            if (soundEnabled) {
+                soundBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                soundBtn.classList.remove('muted');
+            } else {
+                soundBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                soundBtn.classList.add('muted');
+            }
+            
+            // Сохраняем настройку в localStorage
+            localStorage.setItem('sound_enabled', soundEnabled.toString());
+        }
+        
+        // Check authentication status
+        function checkAuth() {
+            fetch('/api/user')
+                .then(response => {
+                    if (response.status === 401) {
+                        return { authenticated: false };
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error || !data.steam_id) {
+                        // Not logged in
+                        $('#login-item').show();
+                        $('#user-profile').hide();
+                    } else {
+                        // Logged in
+                        $('#login-item').hide();
+                        $('#user-profile').show();
+                        $('#header-username').text(data.username);
+                        $('#header-avatar').attr('src', data.avatar);
+                        $('#header-balance').text(data.balance.toFixed(2));
+                        $('#roulette-balance').text(data.balance.toFixed(2));
+                        userBalance = data.balance;
+                    }
+                })
+                .catch(error => {
+                    console.error('Auth check error:', error);
+                });
+        }
+
+        // Fetch all cases from API
+        function fetchCases() {
+            fetch('/api/cases')
+                .then(response => response.json())
+                .then(data => {
+                    allCases = data;
+                    setupYearFilter();
+                    displayCases();
+                })
+                .catch(error => {
+                    console.error('Error fetching cases:', error);
+                    $('#cases-container').html('<div class="col-12"><div class="alert alert-danger">Error loading cases. Please try again later.</div></div>');
+                });
+        }
+
+        // Setup year filter buttons
+        function setupYearFilter() {
+            // Extract unique years
+            const years = [...new Set(allCases.map(c => c.year))].sort();
+            
+            // Create "All" button
+            let buttonsHtml = `<button type="button" class="btn year-btn active" data-year="all">Все</button>`;
+            
+            // Create year buttons
+            years.forEach(year => {
+                buttonsHtml += `<button type="button" class="btn year-btn" data-year="${year}">${year}</button>`;
+            });
+            
+            // Add buttons to container
+            $('#year-buttons').html(buttonsHtml);
+            
+            // Add click event
+            $('.year-btn').click(function() {
+                $('.year-btn').removeClass('active');
+                $(this).addClass('active');
+                
+                const year = $(this).data('year');
+                currentYear = year === 'all' ? null : year;
+                displayCases();
+            });
+        }
+
+        // Display cases based on selected year
+        function displayCases() {
+            let filteredCases = allCases;
+            
+            if (currentYear) {
+                filteredCases = allCases.filter(c => c.year === currentYear);
+            }
+            
+            let casesHtml = '';
+            
+            filteredCases.forEach(crate => {
+                casesHtml += `
+                    <div class="col-md-3 col-sm-6 mb-4">
+                        <div class="case-card" data-id="${crate._id}">
+                            <img src="${crate.image}" alt="${crate.title}" class="case-image">
+                            <div class="case-title">${crate.title}</div>
+                            <div class="case-price">${crate.price.toFixed(2)} RC</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            $('#cases-container').html(casesHtml);
+            
+            // Добавляем обработчик клика на карточку кейса
+            $('.case-card').click(function() {
+                const caseId = $(this).data('id');
+                openCaseDetails(caseId);
+            });
+        }
+
+        // Модифицированная функция открытия деталей кейса
+        function openCaseDetails(caseId) {
+            selectedCase = allCases.find(c => c._id === caseId);
+            
+            if (selectedCase) {
+                $('#caseModalTitle').text(selectedCase.title);
+                $('#case-image').attr('src', selectedCase.image);
+                $('#case-price').text(selectedCase.price.toFixed(2));
+                
+                // Очищаем сетку скинов
+                $('#skins-grid').empty();
+                
+                // Показываем индикатор загрузки для скинов
+                $('#skins-grid').html('<div class="loading-skins">Загрузка скинов...</div>');
+                
+                // Загружаем содержимое кейса
+                fetchCaseContents(caseId).then(skins => {
+                    displaySkinsGrid(skins);
+                }).catch(error => {
+                    $('#skins-grid').html('<div class="error-message">Не удалось загрузить скины</div>');
+                    console.error('Error loading skins:', error);
+                });
+                
+                $('#caseModal').modal('show');
+            }
+        }
+        
+        // Функция для отображения сетки скинов
+        function displaySkinsGrid(skins) {
+            // Очищаем контейнер
+            $('#skins-grid').empty();
+            
+            // Сортируем скины по редкости (от обычных к редким)
+            const rarityOrder = {
+                'Consumer Grade': 1,
+                'Industrial Grade': 2,
+                'Mil-Spec': 3,
+                'Restricted': 4,
+                'Classified': 5,
+                'Covert': 6,
+                'Exceedingly Rare': 7
+            };
+            
+            // Фильтруем скины - только обычные скины (не ножи/перчатки), без StatTrak
+            const regularSkins = skins.filter(skin => 
+                skin.weapon && 
+                skin.weapon.type !== 'knife' && 
+                skin.weapon.type !== 'gloves' && 
+                !skin.stattrak
+            );
+            
+            // Сортируем по редкости
+            regularSkins.sort((a, b) => {
+                const rarityA = a.quality && a.quality.title ? rarityOrder[a.quality.title] || 0 : 0;
+                const rarityB = b.quality && b.quality.title ? rarityOrder[b.quality.title] || 0 : 0;
+                return rarityA - rarityB;
+            });
+            
+            // Удаляем дубликаты (оставляем только уникальные скины по типу оружия и шаблону)
+            const uniqueSkins = [];
+            const skinKeys = new Set();
+            
+            regularSkins.forEach(skin => {
+                const weaponId = skin.weapon && skin.weapon._id ? skin.weapon._id.toString() : '';
+                const patternId = skin.pattern && skin.pattern._id ? skin.pattern._id.toString() : '';
+                const key = `${weaponId}-${patternId}`;
+                
+                if (!skinKeys.has(key)) {
+                    skinKeys.add(key);
+                    uniqueSkins.push(skin);
+                }
+            });
+            
+            // Добавляем скины в сетку
+            uniqueSkins.forEach(skin => {
+                let rarityClass = '';
+                if (skin.quality && skin.quality.title) {
+                    rarityClass = skin.quality.title.toLowerCase().replace(/ /g, '-');
+                }
+                
+                const skinName = skin.weapon && skin.pattern ? 
+                    `${skin.weapon.title} | ${skin.pattern.title}` : 
+                    'Неизвестный скин';
+                
+                const skinElement = `
+                    <div class="skin-item ${rarityClass}">
+                        <img src="${skin.image || '../assets/img/default_item.png'}" alt="${skinName}">
+                        <div class="skin-name">${skinName}</div>
+                    </div>
+                `;
+                
+                $('#skins-grid').append(skinElement);
+            });
+            
+            // Проверяем наличие ножей или перчаток
+            const hasSpecialItems = selectedCase.title.includes("Glove") || 
+                                  !selectedCase.title.includes("CS:GO Weapon Case 3") && 
+                                  !selectedCase.title.includes("Revolver Case");
+            
+            // Добавляем элемент "Rare Special Item" в конец сетки, если в кейсе есть ножи или перчатки
+            if (hasSpecialItems) {
+                // Определяем тип редких предметов
+                let specialText = 'Rare Special Item';
+                
+                const rareSpecialElement = `
+                    <div class="skin-item rare-special">
+                        <img src="https://raw.githubusercontent.com/ByMykel/counter-strike-image-tracker/main/static/panorama/images/econ/weapon_cases/crate_community_35_rare_item_png.png" alt="Rare Special Item">
+                        <div class="skin-name">${specialText}</div>
+                    </div>
+                `;
+                
+                $('#skins-grid').append(rareSpecialElement);
+            }
+            
+            // Если скинов нет, показываем сообщение
+            if (uniqueSkins.length === 0 && !hasSpecialItems) {
+                $('#skins-grid').html('<div class="no-skins-message">Нет доступных скинов</div>');
+            }
+        }
+        
+        // Выбор кейса для рулетки
+        function selectCaseForRoulette(caseId) {
+            selectedCase = allCases.find(c => c._id === caseId);
+            
+            if (!selectedCase) return;
+            
+            // Проверяем баланс
+            if (userBalance < selectedCase.price) {
+                showNotification(`Недостаточно средств для открытия кейса. Необходимо: ${selectedCase.price.toFixed(2)} RC`, 'error');
+                return;
+            }
+            
+            // Обновляем информацию о кейсе в рулетке
+            $('#roulette-case-image').attr('src', selectedCase.image);
+            $('#roulette-case-name').text(selectedCase.title);
+            $('#roulette-case-price').text(selectedCase.price.toFixed(2));
+            $('#roulette-balance').text(userBalance.toFixed(2));
+            
+            // Показываем рулетку и индикатор загрузки
+            showRouletteInterface();
+            document.getElementById('roulette-loading').style.display = 'flex';
+            
+            // Загружаем содержимое кейса, если еще не загружено
+            if (!caseSkins[caseId]) {
+                fetchCaseContents(caseId).then(() => {
+                    // Начинаем открытие кейса только после успешной загрузки скинов
+                    startRouletteOpening();
+                }).catch(error => {
+                    console.error('Error fetching case contents:', error);
+                    showNotification('Ошибка загрузки содержимого кейса. Пожалуйста, попробуйте позже.', 'error');
+                    hideRouletteInterface();
+                });
+            } else {
+                // Если скины уже загружены, сразу начинаем открытие
+                startRouletteOpening();
+            }
+        }
+        
+        // Загрузка содержимого кейса
+        function fetchCaseContents(caseId) {
+            return new Promise((resolve, reject) => {
+                fetch(`/api/case/${caseId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (!data || !data.skins || !data.skins.length) {
+                            throw new Error('No skins data for case');
+                        }
+                        
+                        // Кэшируем скины для этого кейса
+                        caseSkins[caseId] = data.skins;
+                        console.log(`Loaded ${data.skins.length} skins for case ${caseId}`);
+                        resolve(data.skins);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching case contents:', error);
+                        reject(error);
+                    });
+            });
+        }
+        
+        // Показ интерфейса рулетки
+        function showRouletteInterface() {
+            const rouletteContainer = document.getElementById('roulette-container');
+            rouletteContainer.classList.add('active');
+            
+            // Загружаем настройки звука из localStorage
+            const savedSoundSetting = localStorage.getItem('sound_enabled');
+            if (savedSoundSetting !== null) {
+                soundEnabled = savedSoundSetting === 'true';
+                
+                const soundBtn = document.getElementById('toggle-sound');
+                if (soundEnabled) {
+                    soundBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    soundBtn.classList.remove('muted');
+                } else {
+                    soundBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                    soundBtn.classList.add('muted');
+                }
+            }
+        }
+        
+        // Функция для закрытия интерфейса рулетки
+        function hideRouletteInterface() {
+            const rouletteContainer = document.getElementById('roulette-container');
+            rouletteContainer.classList.remove('active');
+            
+            // Очищаем контейнер с элементами
+            const itemsContainer = document.getElementById('roulette-items-container');
+            itemsContainer.innerHTML = '';
+            itemsContainer.style.transition = 'transform 0s linear';
+            itemsContainer.style.transform = 'translateX(0px)';
+        }
+        
+        // Запуск процесса открытия кейса через рулетку
+        function startRouletteOpening() {
+            if (rouletteRunning) return;
+            rouletteRunning = true;
+            
+            // Скрываем индикатор загрузки
+            document.getElementById('roulette-loading').style.display = 'none';
+            
+            // Проигрываем звук начала открытия
+            playSound('opening');
+            
+            // Этап 1: Сканирование кейса для получения выигрышного предмета
+            fetch(`/api/scan-case/${selectedCase._id}`, {
+                method: 'POST'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(scanData => {
+                if (scanData.error) {
+                    showNotification(scanData.error, 'error');
+                    rouletteRunning = false;
+                    return;
+                }
+                
+                // Обновляем баланс
+                if (typeof scanData.new_balance === 'number') {
+                    userBalance = scanData.new_balance;
+                    $('#header-balance').text(userBalance.toFixed(2));
+                    $('#roulette-balance').text(userBalance.toFixed(2));
+                }
+                
+                // Получаем выигрышный предмет
+                if (scanData.wonItem) {
+                    selectedItem = scanData.wonItem;
+                } else {
+                    throw new Error('No item data received from scan');
+                }
+                
+                // Создаем рулетку с выигрышным предметом
+                createRouletteWithWinningItem(selectedItem);
+                
+                // Этап 2: Запускаем анимацию рулетки, потом завершаем открытие
+                return startRouletteAnimation(selectedItem);
+                
+            })
+            .catch(error => {
+                console.error('Error in roulette opening:', error);
+                showNotification('Ошибка открытия кейса. Пожалуйста, попробуйте позже.', 'error');
+                rouletteRunning = false;
+            });
+        }
+        
+        // Создание рулетки с выигрышным предметом и другими случайными предметами
+        function createRouletteWithWinningItem(winningItem) {
+            // Очищаем контейнер рулетки
+            const itemsContainer = document.getElementById('roulette-items-container');
+            itemsContainer.innerHTML = '';
+            itemsContainer.style.transition = 'transform 0s linear';
+            itemsContainer.style.transform = 'translateX(0px)';
+            
+            // Проверяем наличие скинов для этого кейса
+            const caseSkinsPool = caseSkins[selectedCase._id];
+            if (!caseSkinsPool || !caseSkinsPool.length) {
+                console.error('No skins available for this case');
+                showNotification('Ошибка: нет доступных скинов для этого кейса', 'error');
+                return;
+            }
+            
+            // Распределение скинов по редкостям
+            const skinsByRarity = {
+                'Consumer Grade': [],
+                'Industrial Grade': [],
+                'Mil-Spec': [],
+                'Restricted': [],
+                'Classified': [],
+                'Covert': [],
+                'Exceedingly Rare': []
+            };
+            
+            // Разделяем скины по редкостям
+            caseSkinsPool.forEach(skin => {
+                if (skin.quality && skin.quality.title && skinsByRarity.hasOwnProperty(skin.quality.title)) {
+                    skinsByRarity[skin.quality.title].push(skin);
+                }
+            });
+            
+            console.log('Skins by rarity:', Object.keys(skinsByRarity).map(r => `${r}: ${skinsByRarity[r].length}`));
+            
+            // Создаем элементы для рулетки с реалистичным распределением
+            const numItemsToShow = 50; // Количество элементов в рулетке
+            const winningItemPosition = Math.floor(numItemsToShow * 0.8); // Позиция выигрышного предмета
+            
+            const rouletteItems = [];
+            
+            // Распределение редкости в рулетке - реалистичное для CS:GO
+            const rarityDistribution = [
+                { rarity: 'Mil-Spec', weight: 60 },
+                { rarity: 'Restricted', weight: 20 },
+                { rarity: 'Classified', weight: 10 },
+                { rarity: 'Covert', weight: 4 },
+                { rarity: 'Exceedingly Rare', weight: 1 }
+            ];
+            
+            // Общий вес для нормализации
+            const totalWeight = rarityDistribution.reduce((sum, item) => sum + item.weight, 0);
+            
+            // Создаем случайные элементы для начала рулетки
+            for (let i = 0; i < numItemsToShow; i++) {
+                // Определяем, будет ли это победный предмет или случайный
+                let item;
+                
+                if (i === winningItemPosition) {
+                    // Выигрышный предмет
+                    item = winningItem;
+                } else {
+                    // Выбираем случайную редкость на основе распределения
+                    const randomRoll = Math.random() * totalWeight;
+                    let cumulativeWeight = 0;
+                    let selectedRarity = rarityDistribution[0].rarity;
+                    
+                    for (const rarityEntry of rarityDistribution) {
+                        cumulativeWeight += rarityEntry.weight;
+                        if (randomRoll <= cumulativeWeight) {
+                            selectedRarity = rarityEntry.rarity;
+                            break;
+                        }
+                    }
+                    
+                    // Получаем скины этой редкости
+                    const skinsOfRarity = skinsByRarity[selectedRarity];
+                    
+                    // Если нет скинов этой редкости, берем скины из Mil-Spec как базовые
+                    if (!skinsOfRarity || skinsOfRarity.length === 0) {
+                        // Ищем первую непустую категорию скинов
+                        for (const rarityKey of Object.keys(skinsByRarity)) {
+                            if (skinsByRarity[rarityKey].length > 0) {
+                                selectedRarity = rarityKey;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Если выбрана редкость Exceedingly Rare, это нож или перчатки
+                    // Для ножей и перчаток StatTrak встречается реже
+                    const isStatTrak = Math.random() < (selectedRarity === 'Exceedingly Rare' ? 0.15 : 0.2);
+                    
+                    // Выбираем случайный скин из доступных для этой редкости
+                    let availableSkins = skinsByRarity[selectedRarity].filter(skin => 
+                        skin.stattrak === isStatTrak // Выбираем только StatTrak или non-StatTrak
+                    );
+                    
+                    // Если после фильтрации нет скинов, берем любые скины этой редкости
+                    if (!availableSkins || availableSkins.length === 0) {
+                        availableSkins = skinsByRarity[selectedRarity];
+                    }
+                    
+                    // Если все равно нет скинов, берем случайный из общего пула
+                    if (!availableSkins || availableSkins.length === 0) {
+                        availableSkins = caseSkinsPool;
+                    }
+                    
+                    // Выбираем случайный скин
+                    item = availableSkins[Math.floor(Math.random() * availableSkins.length)];
+                }
+                
+                                // Сохраняем элемент для последующего создания HTML
+                rouletteItems.push({
+                    item: item,
+                    isWinning: i === winningItemPosition
+                });
+            }
+            
+            console.log('Created roulette items:', rouletteItems.length);
+            
+            // Создаем HTML для элементов рулетки
+            rouletteItems.forEach(entry => {
+                const item = entry.item;
+                const isWinning = entry.isWinning;
+                
+                if (!item) {
+                    console.warn('Undefined item in roulette');
+                    return;
+                }
+                
+                // Проверяем, является ли предмет ножом или перчатками
+                const isSpecialItem = (item.weapon && (item.weapon.type === 'knife' || item.weapon.type === 'gloves'));
+                
+                // Определяем класс редкости для стилизации
+                let rarityClass = '';
+                if (isSpecialItem) {
+                    rarityClass = 'rare-special';
+                } else if (item.quality && item.quality.title) {
+                    rarityClass = 'rarity-' + item.quality.title.toLowerCase().replace(/ /g, '-');
+                }
+                
+                // Проверяем, StatTrak или обычный
+                const stattrakClass = (!isSpecialItem && item.stattrak) ? 'stattrak' : '';
+                
+                // Создаем элемент для рулетки
+                const itemElement = document.createElement('div');
+                itemElement.className = `roulette-item ${rarityClass} ${stattrakClass} ${isWinning ? 'winning-item' : ''}`;
+                itemElement.dataset.itemId = item._id;
+                
+                // Для ножей и перчаток показываем "Rare Special Item"
+                if (isSpecialItem) {
+                    itemElement.innerHTML = `
+                        <img src="${RARE_SPECIAL_IMAGE}" alt="Rare Special Item">
+                        <div class="roulette-item-name">Rare Special Item</div>
+                        <div class="roulette-item-exterior"></div>
+                    `;
+                } else {
+                    // Название предмета будет добавлено через HTML
+                    let itemName = '';
+                    if (item.souvenir) {
+                        itemName += 'Souvenir ';
+                    }
+                    
+                    if (item.weapon && item.weapon.title && item.pattern && item.pattern.title) {
+                        itemName += `${item.weapon.title} | ${item.pattern.title}`;
+                    } else {
+                        itemName += "Неизвестный предмет";
+                    }
+                    
+                    // Определение exterior на основе диапазона float
+                    let exterior = "Factory New";
+                    const float = item.float || (Math.random() * 0.7);
+                    
+                    if (float > 0.07) exterior = "Minimal Wear";
+                    if (float > 0.15) exterior = "Field-Tested";
+                    if (float > 0.38) exterior = "Well-Worn";
+                    if (float > 0.45) exterior = "Battle-Scarred";
+                    
+                    itemElement.innerHTML = `
+                        <img src="${item.image || '../assets/img/default_item.png'}" alt="${itemName}">
+                        <div class="roulette-item-name">${itemName}</div>
+                        <div class="roulette-item-exterior">${exterior}</div>
+                    `;
+                }
+                
+                itemsContainer.appendChild(itemElement);
+            });
+        }
+        
+        // Запуск анимации вращения рулетки
+        function startRouletteAnimation(winningItem) {
+            return new Promise((resolve, reject) => {
+                try {
+                    setTimeout(() => {
+                        // Начинаем проигрывать звук вращения
+                        playSound('spin');
+                        
+                        const itemsContainer = document.getElementById('roulette-items-container');
+                        const containerWidth = itemsContainer.scrollWidth;
+                        const viewportWidth = document.querySelector('.roulette-wheel-container').clientWidth;
+                        
+                        // Находим все элементы рулетки и выигрышный элемент
+                        const rouletteItems = Array.from(itemsContainer.querySelectorAll('.roulette-item'));
+                        const winningItemElement = itemsContainer.querySelector('.winning-item');
+                        
+                        if (!winningItemElement) {
+                            reject(new Error('Winning item element not found'));
+                            return;
+                        }
+                        
+                        // Индекс выигрышного элемента в массиве
+                        const winningItemIndex = rouletteItems.indexOf(winningItemElement);
+                        console.log(`Winning item index: ${winningItemIndex} of ${rouletteItems.length}`);
+                        
+                        // Получаем размер и позицию выигрышного элемента
+                        const itemWidth = winningItemElement.offsetWidth;
+                        const itemMargin = parseInt(window.getComputedStyle(winningItemElement).marginRight);
+                        const itemFullWidth = itemWidth + (itemMargin * 2);
+                        
+                        // Точно рассчитываем позицию выигрышного элемента
+                        // Для точного позиционирования используем индекс элемента в контейнере
+                        const winningItemPosition = winningItemIndex * itemFullWidth;
+                        
+                        // Сколько элементов показывается в видимой области
+                        const visibleItems = Math.floor(viewportWidth / itemFullWidth);
+                        
+                        // Позиция центра видимой области
+                        const viewportCenter = viewportWidth / 2;
+                        
+                        // Рассчитываем смещение, чтобы выигрышный элемент оказался точно по центру
+                        // Добавляем небольшое смещение (item/2), чтобы центрировать элемент
+                        const offset = winningItemPosition - viewportCenter + (itemWidth / 2);
+                        
+                        // Добавляем небольшую случайность для естественности (+/- 5px)
+                        const finalOffset = offset + (Math.random() * 10 - 5);
+                        
+                        console.log(`Final offset: ${finalOffset}px`);
+                        
+                        // Начальное положение (немного отступаем назад для эффекта разгона)
+                        const startPosition = -200;
+                        
+                        // Устанавливаем начальную позицию без анимации
+                        itemsContainer.style.transition = 'none';
+                        itemsContainer.style.transform = `translateX(${startPosition}px)`;
+                        itemsContainer.offsetHeight; // Форсируем reflow
+                        
+                        // Принудительно запускаем аппаратное ускорение
+                        itemsContainer.style.willChange = 'transform';
+                        itemsContainer.style.backfaceVisibility = 'hidden';
+                        itemsContainer.style.perspective = '1000px';
+                        
+                        // Запускаем анимацию с более плавной кривой Безье
+                        const duration = 9; // 9 секунд для анимации
+                        
+                        // Делаем основной прокрут
+                        // cubic-bezier(0.33, 0.85, 0.4, 0.99) дает хорошее плавное замедление
+                        itemsContainer.style.transition = `transform ${duration}s cubic-bezier(0.33, 0.85, 0.4, 0.99)`;
+                        
+                        // Устанавливаем точную конечную позицию
+                        itemsContainer.style.transform = `translateX(-${finalOffset}px)`;
+                        
+                        // Проверка точного позиционирования через 9.1 секунду (после завершения анимации)
+                        setTimeout(() => {
+                            // Проверяем и корректируем позицию если необходимо
+                            const currentTransform = window.getComputedStyle(itemsContainer).transform;
+                            const matrix = new DOMMatrixReadOnly(currentTransform);
+                            const currentX = matrix.m41; // Текущее смещение по X
+                            
+                            console.log(`Animation ended. Current position: ${currentX}px, Expected: -${finalOffset}px`);
+                            
+                            // Если есть отклонение более 5px, корректируем позицию
+                            if (Math.abs(currentX + finalOffset) > 5) {
+                                // Моментально корректируем позицию без анимации
+                                itemsContainer.style.transition = 'none';
+                                itemsContainer.style.transform = `translateX(-${finalOffset}px)`;
+                                itemsContainer.offsetHeight; // Форсируем reflow
+                                console.log("Position corrected!");
+                            }
+                            
+                            // Даем небольшую паузу для видимости выигрыша
+                            setTimeout(() => {
+                                // Проигрываем звук выигрыша
+                                playSound('win');
+                                
+                                // Подсвечиваем выигрышный элемент
+                                winningItemElement.classList.add('roulette-win');
+                                
+                                // Освобождаем ресурсы GPU
+                                itemsContainer.style.willChange = 'auto';
+                                
+                                // Даем еще 2.5 секунды для наблюдения за выигрышем
+                                setTimeout(() => {
+                                    finishCaseOpening(winningItem).then(resolve).catch(reject);
+                                }, 2500);
+                                
+                            }, 300); // Небольшая пауза перед подсвечиванием выигрыша
+                            
+                        }, duration * 1000 + 100); // Небольшой запас после окончания анимации
+                        
+                    }, 500); // Начальная задержка перед стартом
+                    
+                } catch (error) {
+                    console.error("Animation error:", error);
+                    reject(error);
+                }
+            });
+        }
+        
+        // Завершение открытия кейса после анимации рулетки
+        function finishCaseOpening(winningItem) {
+            return new Promise((resolve, reject) => {
+                // Этап 3: Завершаем открытие через API claim-scanned-case
+                fetch(`/api/claim-scanned-case/${selectedCase._id}`, {
+                    method: 'POST'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        showNotification(data.error, 'error');
+                        rouletteRunning = false;
+                        reject(new Error(data.error));
+                        return;
+                    }
+                    
+                    // Обновляем информацию о выигранном предмете, если есть
+                    if (data.wonItem) {
+                        selectedItem = data.wonItem;
+                    }
+                    
+                    // Добавляем предмет в историю выпадений
+                    addToDropHistory(selectedItem);
+                    
+                    // Сначала закрываем рулетку
+                    rouletteRunning = false;
+                    hideRouletteInterface();
+                    
+                    // После закрытия рулетки с небольшой задержкой показываем окно "Поздравляем!"
+                    setTimeout(() => {
+                        showWinModal(selectedItem);
+                        resolve();
+                    }, 500); // Задержка в 500мс между закрытием рулетки и показом победного окна
+                    
+                })
+                .catch(error => {
+                    console.error('Error finishing case opening:', error);
+                    showNotification('Ошибка завершения открытия кейса. Пожалуйста, попробуйте позже.', 'error');
+                    rouletteRunning = false;
+                    reject(error);
+                });
+            });
+        }
+        
+        // Show win modal with item (без показателя Float)
+        function showWinModal(item) {
+            if (!item) {
+                showNotification("Ошибка: Информация о предмете недоступна", "error");
+                return;
+            }
+            
+            // Проверяем, является ли предмет ножом или перчатками
+            const isSpecialItem = (item.weapon && (item.weapon.type === 'knife' || item.weapon.type === 'gloves'));
+            
+            // Format item name with StatTrak or Souvenir if needed
+            let itemName = '';
+            
+            if (isSpecialItem) {
+                // Для ножей и перчаток показываем полное название
+                if (item.stattrak) {
+                    itemName += '<span style="color: #CF6A32;">StatTrak™</span> ';
+                }
+                
+                if (item.weapon && item.weapon.title && item.pattern && item.pattern.title) {
+                    itemName += `${item.weapon.title} | ${item.pattern.title}`;
+                } else {
+                    itemName += "Rare Special Item";
+                }
+            } else {
+                // Для обычных предметов
+                if (item.stattrak) {
+                    itemName += '<span style="color: #CF6A32;">StatTrak™</span> ';
+                } else if (item.souvenir) {
+                    itemName += '<span style="color: #FFD700;">Souvenir</span> ';
+                }
+                
+                // Добавляем название предмета
+                if (item.weapon && item.weapon.title && item.pattern && item.pattern.title) {
+                    itemName += `${item.weapon.title} | ${item.pattern.title}`;
+                } else {
+                    itemName += "Неизвестный предмет";
+                }
+            }
+            
+            // Безопасное получение цвета качества
+            const qualityColor = (item.quality && item.quality.color) ? item.quality.color : 
+                                (isSpecialItem ? "#FFD700" : "#ffffff");
+            
+            // Установка данных в модальное окно
+            $('#won-item-name').html(itemName).css('color', qualityColor);
+            
+            // Устанавливаем изображение
+            if (isSpecialItem) {
+                // Используем реальное изображение предмета, а не "Rare Special Item"
+                $('#won-item-image').attr('src', item.image || "../assets/img/default_item.png");
+            } else {
+                $('#won-item-image').attr('src', item.image || "../assets/img/default_item.png");
+            }
+            
+            // Безопасный вывод цены
+            let itemPrice = "0.00";
+            if (item.price !== undefined && item.price !== null) {
+                if (typeof item.price === 'number') {
+                    itemPrice = item.price.toFixed(2);
+                } else {
+                    itemPrice = item.price.toString();
+                }
+            }
+            $('#won-item-price').text(itemPrice);
+            
+            // Открываем модальное окно
+            $('#winModal').modal('show');
+        }
+
+        // Initialize page
+        $(document).ready(function() {
+            // Загружаем историю выпадений
+            loadDropHistory();
+            
+            checkAuth();
+            fetchCases();
+            
+            // Обработчик нажатия на кнопку "Открыть кейс" в модальном окне
+            $('#open-case-directly').click(function() {
+                $('#caseModal').modal('hide');
+                selectCaseForRoulette(selectedCase._id);
+            });
+            
+            // Обработчик переключения звука
+            $('#toggle-sound').click(function() {
+                toggleSound();
+            });
+            
+            // Загружаем настройки звука из localStorage
+            const savedSoundSetting = localStorage.getItem('sound_enabled');
+            if (savedSoundSetting !== null) {
+                soundEnabled = savedSoundSetting === 'true';
+                
+                const soundBtn = document.getElementById('toggle-sound');
+                if (soundEnabled) {
+                    soundBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    soundBtn.classList.remove('muted');
+                } else {
+                    soundBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                    soundBtn.classList.add('muted');
+                }
+            }
+            
+            // Handle user profile dropdown
+            $('.user-profile-frame').click(function(e) {
+                e.stopPropagation();
+                $(this).toggleClass('active');
+            });
+            
+            $(document).click(function() {
+                $('.user-profile-frame').removeClass('active');
+            });
+            
+            // Set up fade-in animations
+            setupFadeInAnimation();
+            setupMobileMenu();
+            
+            // Инициализация звуков
+            // На многих браузерах звуки могут быть заблокированы без взаимодействия пользователя
+            document.addEventListener('click', function initAudio() {
+                // Пытаемся инициализировать звуки
+                Object.values(rouletteSounds).forEach(sound => {
+                    sound.volume = 0;
+                    sound.play().then(() => {
+                        sound.pause();
+                        sound.currentTime = 0;
+                        sound.volume = 0.5;
+                    }).catch(error => {
+                        console.log("Audio initialization blocked:", error);
+                    });
+                });
+                
+                // Удаляем слушатель после первого клика
+                document.removeEventListener('click', initAudio);
+            });
+        });
+
+        function setupFadeInAnimation() {
+            const fadeElements = document.querySelectorAll('.fade-in');
+            
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            fadeElements.forEach(element => {
+                observer.observe(element);
+            });
+        }
+
+        function setupMobileMenu() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (menuToggle && navLinks) {
+                menuToggle.addEventListener('click', function() {
+                    if (navLinks.style.display === 'flex') {
+                        navLinks.style.display = 'none';
+                    } else {
+                        navLinks.style.display = 'flex';
+                        navLinks.style.position = 'absolute';
+                        navLinks.style.flexDirection = 'column';
+                        navLinks.style.top = '60px';
+                        navLinks.style.right = '20px';
+                        navLinks.style.backgroundColor = 'rgba(18, 18, 18, 0.95)';
+                        navLinks.style.padding = '20px';
+                        navLinks.style.borderRadius = '12px';
+                        navLinks.style.backdropFilter = 'blur(10px)';
+                        navLinks.style.border = '1px solid rgba(209, 212, 255, 0.1)';
+                        navLinks.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)';
+                        
+                        const navItems = navLinks.querySelectorAll('li');
+                        navItems.forEach(item => {
+                            item.style.margin = '10px 0';
+                        });
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
